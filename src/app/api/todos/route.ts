@@ -1,11 +1,13 @@
+// src/app/api/todos/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/src/lib/supabase';
 
+// GET /api/todos/[id]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } } // ❌ 不要 Promise
+  context: { params: Promise<{ id: string }> } // 最新 App Router 要求 Promise
 ) {
-  const { id } = params;
+  const { id } = await context.params; // 注意要 await
 
   const { data, error } = await supabase
     .from('todos')
@@ -20,11 +22,12 @@ export async function GET(
   return NextResponse.json(data);
 }
 
+// PATCH /api/todos/[id]
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } } // ❌ 同上
+  context: { params: Promise<{ id: string }> } // 必须是 Promise
 ) {
-  const { id } = params;
+  const { id } = await context.params;
   const body = await request.json();
   const { text, completed } = body;
 
@@ -42,11 +45,12 @@ export async function PATCH(
   return NextResponse.json(data);
 }
 
+// DELETE /api/todos/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } } // ❌ 同上
+  context: { params: Promise<{ id: string }> } // 必须是 Promise
 ) {
-  const { id } = params;
+  const { id } = await context.params;
 
   const { data, error } = await supabase
     .from('todos')
