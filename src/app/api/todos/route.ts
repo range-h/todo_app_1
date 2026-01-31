@@ -1,64 +1,76 @@
 // src/app/api/todos/[id]/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/src/lib/supabase'
+import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/src/lib/supabase";
 
-// GET /api/todos/[id]
+// GET 单条 todo
 export async function GET(
   request: NextRequest,
-  context: RouteContext<'/api/todos/[id]'>
+  { params }: { params: { id: string } } // 📌 同步对象写法
 ) {
-  const { id } = await context.params
+  const { id } = params;
 
   const { data, error } = await supabase
-    .from('todos')
-    .select('*')
-    .eq('id', id)
-    .single()
+    .from("todos")
+    .select("*")
+    .eq("id", id)
+    .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: error?.message || 'Todo 未找到' }, { status: 404 })
+    return NextResponse.json(
+      { error: error?.message || "Todo 未找到" },
+      { status: 404 }
+    );
   }
-  return NextResponse.json(data)
+
+  return NextResponse.json(data);
 }
 
-// PATCH /api/todos/[id]
+// PATCH 更新 todo
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext<'/api/todos/[id]'>
+  { params }: { params: { id: string } } // 📌 同步对象写法
 ) {
-  const { id } = await context.params
-  const body = await request.json()
-  const { text, completed } = body
+  const { id } = params;
+  const body = await request.json();
+  const { text, completed } = body;
 
   const { data, error } = await supabase
-    .from('todos')
+    .from("todos")
     .update({ text, completed })
-    .eq('id', id)
+    .eq("id", id)
     .select()
-    .single()
+    .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: error?.message || '更新失败' }, { status: 500 })
+    return NextResponse.json(
+      { error: error?.message || "更新失败" },
+      { status: 500 }
+    );
   }
-  return NextResponse.json(data)
+
+  return NextResponse.json(data);
 }
 
-// DELETE /api/todos/[id]
+// DELETE 删除 todo
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext<'/api/todos/[id]'>
+  { params }: { params: { id: string } } // 📌 同步对象写法
 ) {
-  const { id } = await context.params
+  const { id } = params;
 
   const { data, error } = await supabase
-    .from('todos')
+    .from("todos")
     .delete()
-    .eq('id', id)
+    .eq("id", id)
     .select()
-    .single()
+    .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: error?.message || '删除失败' }, { status: 500 })
+    return NextResponse.json(
+      { error: error?.message || "删除失败" },
+      { status: 500 }
+    );
   }
-  return NextResponse.json(data)
+
+  return NextResponse.json(data);
 }
