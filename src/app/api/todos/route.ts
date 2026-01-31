@@ -2,16 +2,52 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/src/lib/supabase'
 
-// 正确：只有 request 一个参数！
+// GET /api/todos
 export async function GET(request: NextRequest) {
-  const { data, error } = await supabase.from('todos').select('*').order('created_at')
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const { data, error } = await supabase
+    .from('todos')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    )
+  }
+
   return NextResponse.json(data)
 }
 
+// POST /api/todos
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const { data, error } = await supabase.from('todos').insert([body]).select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  const { text } = body
+
+  if (!text || typeof text !== 'string') {
+    return NextResponse.json(
+      { error: 'Todo text is required' },
+      { status: 400 }
+    )
+  }
+
+  const { data, error } = await supabase
+    .from('todos')
+    .insert([
+      {
+        text: text.trim(),
+        completed: false,
+      },
+    ])
+    .select()
+    .single()
+
+  if (error) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    )
+  }
+
+  return NextResponse.json(data, { status: 201 })
 }
