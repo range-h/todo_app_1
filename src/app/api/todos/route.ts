@@ -1,3 +1,4 @@
+// src/app/api/todos/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/src/lib/supabase';
 
@@ -6,9 +7,9 @@ import { supabase } from '@/src/lib/supabase';
 // ==============================
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } } // ✅ 最新 Next.js 写法，不是 Promise
 ) {
-  const { id } = await context.params;
+  const { id } = params;
 
   const { data, error } = await supabase
     .from('todos')
@@ -17,7 +18,10 @@ export async function GET(
     .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: error?.message || 'Todo 未找到' }, { status: 404 });
+    return NextResponse.json(
+      { error: error?.message || 'Todo 未找到' },
+      { status: 404 }
+    );
   }
 
   return NextResponse.json(data);
@@ -28,9 +32,9 @@ export async function GET(
 // ==============================
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await context.params;
+  const { id } = params;
   const body = await request.json();
   const { text, completed } = body;
 
@@ -42,7 +46,10 @@ export async function PATCH(
     .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: error?.message || '更新失败' }, { status: 500 });
+    return NextResponse.json(
+      { error: error?.message || '更新失败' },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json(data);
@@ -53,9 +60,9 @@ export async function PATCH(
 // ==============================
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await context.params;
+  const { id } = params;
 
   const { data, error } = await supabase
     .from('todos')
@@ -65,7 +72,10 @@ export async function DELETE(
     .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: error?.message || '删除失败' }, { status: 500 });
+    return NextResponse.json(
+      { error: error?.message || '删除失败' },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json(data);
