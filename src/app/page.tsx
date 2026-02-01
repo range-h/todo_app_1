@@ -1,187 +1,55 @@
+// src/app/page.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import TodoForm from '@/src/components/TodoForm';
-import TodoList from '@/src/components/TodoList';
-import TodoFilter from '@/src/components/TodoFilter';
-import TodoStats from '@/src/components/TodoStats';
-import { Todo } from '@/types/todo';
+import { useAuth, SignInButton } from '@clerk/nextjs';
+import TodoDashboard from '@/src/components/TodoDashboard';
 
 export default function Home() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isSignedIn, isLoaded } = useAuth();
 
-  // Load todos from API on mount
-  useEffect(() => {
-    loadTodos();
-  }, []);
-
-  const loadTodos = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await fetch('/api/todos');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch todos');
-      }
-      
-      const data = await response.json();
-      setTodos(data || []);
-    } catch (err) {
-      console.error('Failed to load todos:', err);
-      setError('Failed to load todos. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const addTodo = async (text: string) => {
-    try {
-      const response = await fetch('/api/todos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add todo');
-      }
-
-      const newTodo = await response.json();
-      setTodos([newTodo, ...todos]);
-    } catch (err) {
-      console.error('Failed to add todo:', err);
-      setError('Failed to add todo. Please try again.');
-    }
-  };
-
-  const updateTodo = async (id: number, text: string) => {
-    try {
-      const response = await fetch(`/api/todos/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update todo');
-      }
-
-      setTodos(todos.map(todo =>
-        todo.id === id ? { ...todo, text } : todo
-      ));
-    } catch (err) {
-      console.error('Failed to update todo:', err);
-      setError('Failed to update todo. Please try again.');
-    }
-  };
-
-  const toggleTodo = async (id: number) => {
-    try {
-      const todo = todos.find(t => t.id === id);
-      if (!todo) return;
-
-      const response = await fetch(`/api/todos/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ completed: !todo.completed }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to toggle todo');
-      }
-
-      setTodos(todos.map(todo =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      ));
-    } catch (err) {
-      console.error('Failed to toggle todo:', err);
-      setError('Failed to toggle todo. Please try again.');
-    }
-  };
-
-  const deleteTodo = async (id: number) => {
-    try {
-      const response = await fetch(`/api/todos/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete todo');
-      }
-
-      setTodos(todos.filter(todo => todo.id !== id));
-    } catch (err) {
-      console.error('Failed to delete todo:', err);
-      setError('Failed to delete todo. Please try again.');
-    }
-  };
-
-  const getFilteredTodos = () => {
-    switch (filter) {
-      case 'active':
-        return todos.filter(todo => !todo.completed);
-      case 'completed':
-        return todos.filter(todo => todo.completed);
-      default:
-        return todos;
-    }
-  };
-
-  if (isLoading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  // 1. 加载状态
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
-  const filteredTodos = getFilteredTodos();
-
+  // src/app/page.tsx 中的未登录判断部分
+if (!isSignedIn) {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          {/* Header */}
-          <header className="text-center mb-8 border-b-4 border-blue-500 pb-6">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">📝 我的任务</h1>
-            <p className="text-gray-700">管理你的日常任务</p>
-          </header>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          {/* Add Todo Form */}
-          <TodoForm onAdd={addTodo} />
-
-          {/* Filter Buttons */}
-          <TodoFilter currentFilter={filter} onChange={setFilter} />
-
-          {/* Todo List */}
-          <TodoList
-            todos={filteredTodos}
-            onToggle={toggleTodo}
-            onUpdate={updateTodo}
-            onDelete={deleteTodo}
-          />
-
-          {/* Stats */}
-          <TodoStats
-            total={todos.length}
-            completed={todos.filter(t => t.completed).length}
-          />
+    <div className="flex flex-col justify-center items-center min-h-screen bg-slate-50 p-4">
+      <div className="text-center p-10 bg-white rounded-3xl shadow-xl border border-gray-100 max-w-sm w-full">
+        {/* 图标装饰 */}
+        <div className="text-6xl mb-6">🚀</div>
+        
+        {/* 主标题：改为深黑色，加大字号 */}
+        <h1 className="text-3xl font-extrabold mb-3 text-gray-900 tracking-tight">
+          欢迎使用 Todo App
+        </h1>
+        
+        {/* 副标题：改为深灰色，增强对比度 */}
+        <p className="mb-8 text-gray-700 leading-relaxed">
+          高效管理您的日常任务<br />
+          请登录以同步您的清单
+        </p>
+        
+        {/* 登录按钮：增加阴影和点击缩放效果 */}
+        <div className="inline-block w-full transform transition-transform active:scale-95">
+          <div className="bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 hover:shadow-blue-300 transition-all cursor-pointer">
+            <SignInButton mode="modal">立即进入</SignInButton>
+          </div>
         </div>
+        
+        <p className="mt-6 text-xs text-gray-400">
+          Powered by Next.js & Clerk
+        </p>
       </div>
-    </main>
+    </div>
   );
+}
+
+  // 3. 登录成功：显示业务主组件
+  return <TodoDashboard />;
 }

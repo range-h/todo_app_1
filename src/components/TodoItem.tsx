@@ -126,7 +126,7 @@ export default function TodoItem({
             >
               {todo.text}
             </p>
-            <p className="text-sm text-gray-600 mt-1">{formatDate(todo.createdAt)}</p>
+            <p className="text-sm text-gray-400 mt-1">{formatDate(todo.created_at)}</p>
           </div>
           <div className="flex gap-2 flex-shrink-0">
             <button
