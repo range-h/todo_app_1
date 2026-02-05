@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import Header from "@/src/components/Header"; // 确保 Header.tsx 已经存在
+import Header from "@/src/components/Header"; 
+import { LanguageProvider } from '@/src/context/LanguageContext'; // 1. 引入 Provider
 
-// 配置字体
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -16,13 +16,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 页面 metadata
 export const metadata: Metadata = {
   title: "我的任务 - Todo App",
   description: "一个简洁高效的任务管理应用",
 };
 
-// RootLayout
 export default function RootLayout({
   children,
 }: {
@@ -32,8 +30,11 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <Header /> {/* 全局显示 Header */}
-          {children} {/* 页面内容 */}
+          {/* 2. 用 LanguageProvider 包裹 Header 和 children */}
+          <LanguageProvider>
+            <Header /> 
+            {children}
+          </LanguageProvider>
         </body>
       </html>
     </ClerkProvider>

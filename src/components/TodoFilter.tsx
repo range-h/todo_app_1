@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useLanguage } from '@/src/context/LanguageContext'; // 【新增】引入钩子
 
 interface TodoFilterProps {
   currentFilter: 'all' | 'active' | 'completed';
@@ -8,10 +9,13 @@ interface TodoFilterProps {
 }
 
 export default function TodoFilter({ currentFilter, onChange }: TodoFilterProps) {
+  const { t } = useLanguage(); // 【新增】获取翻译字典
+
+  // 【修改】将 label 映射到字典中的 key
   const filters = [
-    { value: 'all' as const, label: '全部' },
-    { value: 'active' as const, label: '进行中' },
-    { value: 'completed' as const, label: '已完成' },
+    { value: 'all' as const, label: t.all },
+    { value: 'active' as const, label: t.active },
+    { value: 'completed' as const, label: t.completed },
   ];
 
   return (
@@ -20,7 +24,8 @@ export default function TodoFilter({ currentFilter, onChange }: TodoFilterProps)
         <button
           key={filter.value}
           onClick={() => onChange(filter.value)}
-          className={`px-4 py-2 rounded-full font-medium transition ${
+          // 【修改】添加 cursor-pointer 和点击缩放效果 active:scale-95
+          className={`px-4 py-2 rounded-full font-medium transition cursor-pointer active:scale-95 ${
             currentFilter === filter.value
               ? 'bg-blue-500 text-white shadow-lg'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
